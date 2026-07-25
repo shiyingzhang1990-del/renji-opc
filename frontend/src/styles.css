@@ -386,3 +386,26 @@ nav { display: flex; align-items: center; gap: 20px; font-size: 14px; }
 .admin-table select {
   border: 1px solid #d9dfeb; border-radius: 6px; padding: 4px 8px; font-size: 13px;
 }
+
+/* === Admin Stats === */
+.stats-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px; margin-bottom: 24px;
+}
+.stats-grid.small { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+.stat-card {
+  background: #fff; border-radius: 12px; border: 1px solid #e6eaf1;
+  padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 6px;
+}
+.stat-card strong { font-size: 28px; color: #172033; }
+.stat-card span { font-size: 13px; color: #7a8499; }
+.stat-card.highlight { border-color: #7c3aed; background: #faf5ff; }
+.stat-card.highlight strong { color: #7c3aed; }
+.stats-section { margin-top: 24px; }
+.stats-section h3 { font-size: 18px; margin: 0 0 12px; }
+
+/* === Merchant Contacts (ProductDetailPage) === */
+.merchant-contacts {
+  margin-top: 12px; padding-top: 12px; border-top: 1px solid #e6eaf1;
+}
+.merchant-contacts p { margin: 4px 0; font-size: 14px; color: #586276; }

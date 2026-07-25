@@ -211,6 +211,9 @@ class Product(Base):
     delivery_days: Mapped[int] = mapped_column(default=7)
     ai_generated_content: Mapped[bool] = mapped_column(Boolean, default=False)
     published: Mapped[bool] = mapped_column(Boolean, default=True)
+    contact_wechat: Mapped[str] = mapped_column(String(100), default="")
+    contact_phone: Mapped[str] = mapped_column(String(30), default="")
+    contact_qq: Mapped[str] = mapped_column(String(30), default="")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     merchant: Mapped[Merchant] = relationship(back_populates="products")

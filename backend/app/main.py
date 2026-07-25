@@ -12,7 +12,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
 from .config import get_settings
-from .database import Base, engine, get_db
+from .database import Base, engine, get_db, run_migrations
 from .dependencies import get_current_user
 from .models import (
     Category,
@@ -46,6 +46,7 @@ settings = get_settings()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
+    run_migrations()
     with Session(engine) as db:
         seed_data(db)
     yield
@@ -315,6 +316,72 @@ def open_dispute(
     db.add_all([order, milestone, dispute])
     db.commit()
     return load_order(db, order.id)
+
+
+# ---- Admin endpoints ----
+
+@app.get("/api/orders", response_model=list[OrderOut])
+def list_orders(
+    status_filter: str | None = Query(default=None, alias="status"),
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=20, ge=1, le=100),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if current_user.role not in {"super_admin", "platform_operator", "merchant_owner"}:
+        raise HTTPException(403, "无权查看订单列表")
+    stmt = (
+        select(Order)
+        .options(
+            selectinload(Order.merchant),
+            selectinload(Order.product).selectinload(Product.merchant),
+            selectinload(Order.product).selectinload(Product.category),
+            selectinload(Order.milestones),
+            selectinload(Order.payment),
+        )
+        .order_by(Order.id.desc())
+    )
+    if current_user.role == "merchant_owner":
+        stmt = stmt.where(Order.merchant_id == current_user.merchant_id)
+    if status_filter:
+        stmt = stmt.where(Order.status == status_filter)
+    offset = (page - 1) * page_size
+    return list(db.scalars(stmt.offset(offset).limit(page_size)).unique())
+
+
+@app.get("/api/admin/stats")
+def admin_stats(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if current_user.role not in {"super_admin", "platform_operator"}:
+        raise HTTPException(403, "无权查看统计数据")
+    from sqlalchemy import func
+    from .models import MerchantApplication
+    total_users = db.scalar(select(func.count(User.id)))
+    total_merchants = db.scalar(select(func.count(Merchant.id)).where(Merchant.verified.is_(True)))
+    total_products = db.scalar(select(func.count(Product.id)).where(Product.published.is_(True)))
+    total_orders = db.scalar(select(func.count(Order.id)))
+    total_revenue = db.scalar(select(func.coalesce(func.sum(Order.total_amount), 0)))
+    pending_apps = db.scalar(
+        select(func.count(MerchantApplication.id)).where(
+            MerchantApplication.status.in_(["submitted", "reviewing"])
+        )
+    )
+    order_status_counts = {}
+    for status_val in ["awaiting_payment", "in_progress", "completed", "disputed"]:
+        order_status_counts[status_val] = db.scalar(
+            select(func.count(Order.id)).where(Order.status == status_val)
+        ) or 0
+    return {
+        "total_users": total_users,
+        "total_merchants": total_merchants,
+        "total_products": total_products,
+        "total_orders": total_orders,
+        "total_revenue": float(total_revenue or 0),
+        "pending_applications": pending_apps,
+        "order_status_counts": order_status_counts,
+    }
 
 
 # Serve static frontend in production

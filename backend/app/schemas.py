@@ -40,6 +40,9 @@ class ProductOut(ORMModel):
     currency: str
     delivery_days: int
     ai_generated_content: bool
+    contact_wechat: str
+    contact_phone: str
+    contact_qq: str
     merchant: MerchantOut
     category: CategoryOut
 
@@ -53,6 +56,9 @@ class ProductCreate(BaseModel):
     price_from: Decimal = Field(gt=0)
     delivery_days: int = Field(ge=1, le=365)
     ai_generated_content: bool = False
+    contact_wechat: str = Field(default="", max_length=100)
+    contact_phone: str = Field(default="", max_length=30)
+    contact_qq: str = Field(default="", max_length=30)
 
 
 class MilestoneCreate(BaseModel):
@@ -107,6 +113,7 @@ class OrderOut(ORMModel):
     status: OrderStatus
     total_amount: Decimal
     platform_fee_rate: Decimal
+    created_at: datetime
     merchant: MerchantOut
     product: ProductOut
     milestones: list[MilestoneOut]

@@ -80,6 +80,13 @@ export default function ProductDetailPage() {
             <p className="merchant-name">{product.merchant.display_name}</p>
             {product.merchant.verified && <span className="verified-badge">✓ 平台已认证</span>}
             <p className="merchant-score">服务评分：{product.merchant.service_score} / 5.00</p>
+            {(product.contact_wechat || product.contact_phone || product.contact_qq) && (
+              <div className="merchant-contacts">
+                {product.contact_wechat && <p>微信：{product.contact_wechat}</p>}
+                {product.contact_phone && <p>电话：{product.contact_phone}</p>}
+                {product.contact_qq && <p>QQ：{product.contact_qq}</p>}
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -27,6 +27,9 @@ export default function MerchantPage() {
     delivery_type: "project_service",
     price_from: "",
     delivery_days: "7",
+    contact_wechat: "",
+    contact_phone: "",
+    contact_qq: "",
   });
   const [productLoading, setProductLoading] = useState(false);
   const [productError, setProductError] = useState("");
@@ -101,12 +104,15 @@ export default function MerchantPage() {
           delivery_type: productForm.delivery_type,
           price_from: Number(productForm.price_from),
           delivery_days: Number(productForm.delivery_days),
+          contact_wechat: productForm.contact_wechat,
+          contact_phone: productForm.contact_phone,
+          contact_qq: productForm.contact_qq,
         }),
       });
       const data = await r.json();
       if (!r.ok) { setProductError(data.detail || "发布失败"); return; }
       setProductSuccess(`商品「${data.title}」发布成功！`);
-      setProductForm({ title: "", summary: "", category_id: "", delivery_type: "project_service", price_from: "", delivery_days: "7" });
+      setProductForm({ title: "", summary: "", category_id: "", delivery_type: "project_service", price_from: "", delivery_days: "7", contact_wechat: "", contact_phone: "", contact_qq: "" });
     } catch { setProductError("网络错误"); }
     finally { setProductLoading(false); }
   };
@@ -217,6 +223,14 @@ export default function MerchantPage() {
                 <div className="form-field">
                   <label>交付周期 (天) *</label>
                   <input required type="number" min="1" max="365" value={productForm.delivery_days} onChange={(e) => setProductForm({ ...productForm, delivery_days: e.target.value })} />
+                </div>
+              </div>
+              <div className="form-field">
+                <label>联系方式（方便客户直接对接）</label>
+                <div className="form-row" style={{ marginTop: 4 }}>
+                  <input value={productForm.contact_wechat} onChange={(e) => setProductForm({ ...productForm, contact_wechat: e.target.value })} placeholder="微信号" />
+                  <input value={productForm.contact_phone} onChange={(e) => setProductForm({ ...productForm, contact_phone: e.target.value })} placeholder="手机号" />
+                  <input value={productForm.contact_qq} onChange={(e) => setProductForm({ ...productForm, contact_qq: e.target.value })} placeholder="QQ号" />
                 </div>
               </div>
               <div className="form-actions" style={{ marginTop: 20 }}>
