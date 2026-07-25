@@ -17,7 +17,7 @@ from ..auth import hash_password
 router = APIRouter(prefix="/api/users", tags=["users"])
 
 
-@router.get("/", response_model=list[UserOut])
+@router.get("", response_model=list[UserOut])
 def list_users(
     role: UserRole | None = Query(default=None),
     merchant_id: int | None = Query(default=None),

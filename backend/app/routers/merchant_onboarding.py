@@ -38,7 +38,7 @@ def _application_detail(db: Session, app_id: int) -> MerchantApplication:
     return app
 
 
-@router.post("/", response_model=MerchantApplicationOut, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=MerchantApplicationOut, status_code=status.HTTP_201_CREATED)
 def create_application(
     payload: MerchantApplicationCreate,
     db: Session = Depends(get_db),
@@ -85,7 +85,7 @@ def create_application(
     return app
 
 
-@router.get("/", response_model=list[MerchantApplicationOut])
+@router.get("", response_model=list[MerchantApplicationOut])
 def list_applications(
     status_filter: MerchantApplicationStatus | None = Query(default=None, alias="status"),
     page: int = Query(default=1, ge=1),
