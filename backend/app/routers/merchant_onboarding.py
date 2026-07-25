@@ -211,11 +211,12 @@ def review_application(
             merchant.display_name = app.display_name
             merchant.community_id = app.community_id
 
-        # Link user to merchant and promote role
+        # Link user to merchant and promote role (preserve admin roles)
         user = db.get(User, app.user_id)
         if user:
             user.merchant_id = merchant.id
-            user.role = UserRole.MERCHANT_OWNER
+            if user.role not in {UserRole.SUPER_ADMIN, UserRole.PLATFORM_OPERATOR}:
+                user.role = UserRole.MERCHANT_OWNER
 
     db.add(AuditLog(
         actor_id=current_user.id,

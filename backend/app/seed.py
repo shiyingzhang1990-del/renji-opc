@@ -17,12 +17,21 @@ from .models import (
 
 
 def ensure_admin(db: Session) -> None:
-    """Create a super_admin user if none exists."""
+    """Create a super_admin user if none exists, and ensure existing admin keeps super_admin role."""
+    admin_email = os.getenv("ADMIN_EMAIL", "admin@renji-opc.com")
+    admin_password = os.getenv("ADMIN_PASSWORD", "renji-admin-2024")
+
+    admin = db.scalar(select(User).where(User.email == admin_email).limit(1))
+    if admin is not None:
+        if admin.role != UserRole.SUPER_ADMIN:
+            admin.role = UserRole.SUPER_ADMIN
+            db.commit()
+        return
+
     existing = db.scalar(select(User).where(User.role == UserRole.SUPER_ADMIN).limit(1))
     if existing is not None:
         return
-    admin_email = os.getenv("ADMIN_EMAIL", "admin@renji-opc.com")
-    admin_password = os.getenv("ADMIN_PASSWORD", "renji-admin-2024")
+
     admin = User(
         email=admin_email,
         hashed_password=hash_password(admin_password),
