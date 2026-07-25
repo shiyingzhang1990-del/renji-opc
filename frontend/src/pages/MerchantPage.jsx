@@ -3,6 +3,13 @@ import { useNavigate } from "react-router-dom";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 
+const DELIVERY_LABELS = {
+  digital_good: "数字商品",
+  subscription: "订阅服务",
+  project_service: "项目服务",
+  consulting: "咨询服务",
+};
+
 export default function MerchantPage() {
   const [user, setUser] = useState(null);
   const [apps, setApps] = useState([]);
@@ -10,7 +17,20 @@ export default function MerchantPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState([]);
   const navigate = useNavigate();
+
+  const [productForm, setProductForm] = useState({
+    title: "",
+    summary: "",
+    category_id: "",
+    delivery_type: "project_service",
+    price_from: "",
+    delivery_days: "7",
+  });
+  const [productLoading, setProductLoading] = useState(false);
+  const [productError, setProductError] = useState("");
+  const [productSuccess, setProductSuccess] = useState("");
 
   const token = localStorage.getItem("token") || "";
 
@@ -60,7 +80,36 @@ export default function MerchantPage() {
     })
       .then((r) => r.ok ? r.json() : [])
       .then(setApps);
+
+    fetch(`${API_BASE}/api/categories`)
+      .then((r) => r.ok ? r.json() : [])
+      .then(setCategories);
   }, [token]);
+
+  const handleProductSubmit = async (e) => {
+    e.preventDefault();
+    setProductError(""); setProductSuccess(""); setProductLoading(true);
+    try {
+      const r = await fetch(`${API_BASE}/api/products`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          merchant_id: user.merchant_id,
+          category_id: Number(productForm.category_id),
+          title: productForm.title,
+          summary: productForm.summary,
+          delivery_type: productForm.delivery_type,
+          price_from: Number(productForm.price_from),
+          delivery_days: Number(productForm.delivery_days),
+        }),
+      });
+      const data = await r.json();
+      if (!r.ok) { setProductError(data.detail || "发布失败"); return; }
+      setProductSuccess(`商品「${data.title}」发布成功！`);
+      setProductForm({ title: "", summary: "", category_id: "", delivery_type: "project_service", price_from: "", delivery_days: "7" });
+    } catch { setProductError("网络错误"); }
+    finally { setProductLoading(false); }
+  };
 
   const statusLabel = {
     draft: "草稿", submitted: "待审核", reviewing: "审核中",
@@ -125,10 +174,59 @@ export default function MerchantPage() {
       )}
 
       {verifiedApp && (
-        <div className="merchant-verified">
-          <h2>✓ 商家已认证</h2>
-          <p>您的商家已通过平台认证，可以开始发布商品和接单了。</p>
-        </div>
+        <>
+          <div className="merchant-verified">
+            <h2>✓ 商家已认证</h2>
+            <p>您的商家已通过平台认证，可以发布商品了。</p>
+          </div>
+
+          <div className="form-card" style={{ margin: "24px 7vw" }}>
+            <h2 style={{ marginBottom: 4 }}>发布商品</h2>
+            <p style={{ color: "#586276", marginBottom: 20 }}>填写商品信息，发布到壬集市场</p>
+
+            {productError && <div className="form-error">{productError}</div>}
+            {productSuccess && <div className="form-success">{productSuccess}</div>}
+
+            <form onSubmit={handleProductSubmit}>
+              <div className="form-field" style={{ marginTop: 0 }}>
+                <label>商品名称 *</label>
+                <input required value={productForm.title} onChange={(e) => setProductForm({ ...productForm, title: e.target.value })} placeholder="例如：品牌VI设计套餐" />
+              </div>
+              <div className="form-field">
+                <label>商品简介 *</label>
+                <textarea required value={productForm.summary} onChange={(e) => setProductForm({ ...productForm, summary: e.target.value })} placeholder="简要描述商品的核心卖点和交付内容" rows={3} />
+              </div>
+              <div className="form-field">
+                <label>商品分类 *</label>
+                <select required value={productForm.category_id} onChange={(e) => setProductForm({ ...productForm, category_id: e.target.value })}>
+                  <option value="">请选择分类</option>
+                  {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+              </div>
+              <div className="form-field">
+                <label>交付类型 *</label>
+                <select required value={productForm.delivery_type} onChange={(e) => setProductForm({ ...productForm, delivery_type: e.target.value })}>
+                  {Object.entries(DELIVERY_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                </select>
+              </div>
+              <div className="form-row">
+                <div className="form-field">
+                  <label>起售价 (元) *</label>
+                  <input required type="number" min="1" step="0.01" value={productForm.price_from} onChange={(e) => setProductForm({ ...productForm, price_from: e.target.value })} placeholder="0.00" />
+                </div>
+                <div className="form-field">
+                  <label>交付周期 (天) *</label>
+                  <input required type="number" min="1" max="365" value={productForm.delivery_days} onChange={(e) => setProductForm({ ...productForm, delivery_days: e.target.value })} />
+                </div>
+              </div>
+              <div className="form-actions" style={{ marginTop: 20 }}>
+                <button type="submit" className="primary-button" disabled={productLoading}>
+                  {productLoading ? "发布中…" : "发布商品"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </>
       )}
 
       {!pendingApp && !verifiedApp && (

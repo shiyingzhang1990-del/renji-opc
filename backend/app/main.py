@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session, selectinload
 
 from .config import get_settings
 from .database import Base, engine, get_db
+from .dependencies import get_current_user
 from .models import (
     Category,
     Dispute,
@@ -23,6 +24,7 @@ from .models import (
     OrderStatus,
     PaymentLedger,
     Product,
+    User,
 )
 from .payment import get_payment_provider
 from .schemas import (
@@ -103,7 +105,13 @@ def list_products(
 
 
 @app.post("/api/products", response_model=ProductOut, status_code=status.HTTP_201_CREATED)
-def create_product(payload: ProductCreate, db: Session = Depends(get_db)):
+def create_product(
+    payload: ProductCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if current_user.merchant_id != payload.merchant_id:
+        raise HTTPException(403, "只能为自己的商家发布商品")
     merchant = db.get(Merchant, payload.merchant_id)
     category = db.get(Category, payload.category_id)
     if merchant is None or not merchant.verified:
