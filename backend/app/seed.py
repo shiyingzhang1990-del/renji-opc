@@ -1,18 +1,42 @@
+import os
 from decimal import Decimal
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from .auth import hash_password
 from .models import (
     Category,
     Community,
     Merchant,
     Product,
     ProductDeliveryType,
+    User,
+    UserRole,
 )
 
 
+def ensure_admin(db: Session) -> None:
+    """Create a super_admin user if none exists."""
+    existing = db.scalar(select(User).where(User.role == UserRole.SUPER_ADMIN).limit(1))
+    if existing is not None:
+        return
+    admin_email = os.getenv("ADMIN_EMAIL", "admin@renji-opc.com")
+    admin_password = os.getenv("ADMIN_PASSWORD", "renji-admin-2024")
+    admin = User(
+        email=admin_email,
+        hashed_password=hash_password(admin_password),
+        display_name="壬集管理员",
+        role=UserRole.SUPER_ADMIN,
+        is_active=True,
+    )
+    db.add(admin)
+    db.commit()
+
+
 def seed_data(db: Session) -> None:
+    ensure_admin(db)
+
     if db.scalar(select(Category.id).limit(1)) is not None:
         return
 
