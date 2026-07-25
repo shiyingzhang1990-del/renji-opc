@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: renji-opc
+    env: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: renji-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: APP_NAME
+        value: "壬集 OPC"
+      - key: ENV
+        value: production
+      - key: CORS_ORIGINS
+        value: ""
+      - key: PLATFORM_FEE_RATE
+        value: "0.08"
+      - key: PAYMENT_PROVIDER
+        value: mock
+
+databases:
+  - name: renji-db
+    plan: free
