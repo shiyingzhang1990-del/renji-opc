@@ -9,6 +9,7 @@ import MerchantPage from "./pages/MerchantPage";
 import DashboardPage from "./pages/DashboardPage";
 import ContentPage from "./pages/ContentPage";
 import OrderPage from "./pages/OrderPage";
+import AdminPage from "./pages/AdminPage";
 
 export default function App() {
   return (
@@ -24,6 +25,7 @@ export default function App() {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/content/:slug" element={<ContentPage />} />
         <Route path="/order/:productId" element={<OrderPage />} />
+        <Route path="/admin" element={<AdminPage />} />
       </Routes>
       <Footer />
     </>
