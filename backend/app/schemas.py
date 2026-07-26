@@ -47,6 +47,8 @@ class ProductOut(ORMModel):
     contact_phone: str
     contact_qq: str
     display_url: str | None = None
+    images: str | None = None
+    deliverable_url: str | None = None
     merchant: MerchantOut
     category: CategoryOut
 
@@ -64,6 +66,8 @@ class ProductCreate(BaseModel):
     contact_phone: str = Field(default="", max_length=30)
     contact_qq: str = Field(default="", max_length=30)
     display_url: str | None = Field(default=None, max_length=500)
+    images: str | None = Field(default=None, max_length=5000)
+    deliverable_url: str | None = Field(default=None, max_length=500)
 
 
 class ProductUpdate(BaseModel):
@@ -78,6 +82,8 @@ class ProductUpdate(BaseModel):
     contact_phone: str | None = Field(default=None, max_length=30)
     contact_qq: str | None = Field(default=None, max_length=30)
     display_url: str | None = Field(default=None, max_length=500)
+    images: str | None = Field(default=None, max_length=5000)
+    deliverable_url: str | None = Field(default=None, max_length=500)
 
 
 class MilestoneCreate(BaseModel):

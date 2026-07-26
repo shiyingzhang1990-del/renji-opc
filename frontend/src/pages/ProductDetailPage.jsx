@@ -46,6 +46,21 @@ export default function ProductDetailPage() {
           </div>
           <h1>{product.title}</h1>
           <p className="detail-summary">{product.summary}</p>
+          {product.images && (() => {
+            try {
+              const urls = JSON.parse(product.images);
+              if (Array.isArray(urls) && urls.length > 0) {
+                return (
+                  <div className="product-gallery">
+                    {urls.map((url, i) => (
+                      <img key={i} src={url} alt={`${product.title} 实拍图 ${i + 1}`} className="gallery-img" onError={(e) => { e.target.style.display = "none"; }} />
+                    ))}
+                  </div>
+                );
+              }
+            } catch {}
+            return null;
+          })()}
           <div className="detail-tags">
             <span>{deliveryLabels[product.delivery_type]}</span>
             <span>{product.delivery_days} 天交付</span>

@@ -218,6 +218,8 @@ class Product(Base):
     contact_phone: Mapped[str] = mapped_column(String(30), default="")
     contact_qq: Mapped[str] = mapped_column(String(30), default="")
     display_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    images: Mapped[str | None] = mapped_column(Text, nullable=True)
+    deliverable_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     merchant: Mapped[Merchant] = relationship(back_populates="products")

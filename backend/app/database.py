@@ -31,6 +31,8 @@ def run_migrations() -> None:
                 ("contact_phone", "VARCHAR(30) DEFAULT ''"),
                 ("contact_qq", "VARCHAR(30) DEFAULT ''"),
                 ("display_url", "VARCHAR(500)"),
+                ("images", "TEXT"),
+                ("deliverable_url", "VARCHAR(500)"),
             ]
             for col_name, col_def in migrations:
                 if col_name not in cols:
@@ -55,6 +57,8 @@ def run_migrations() -> None:
         else:
             # PostgreSQL: ADD COLUMN IF NOT EXISTS
             conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS display_url VARCHAR(500)"))
+            conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS images TEXT"))
+            conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS deliverable_url VARCHAR(500)"))
             conn.execute(text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method VARCHAR(20) DEFAULT 'alipay'"))
             conn.execute(text("ALTER TABLE merchants ADD COLUMN IF NOT EXISTS alipay_account VARCHAR(200)"))
             conn.execute(text("ALTER TABLE merchants ADD COLUMN IF NOT EXISTS wechatpay_merchant_id VARCHAR(200)"))

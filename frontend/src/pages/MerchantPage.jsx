@@ -30,6 +30,8 @@ export default function MerchantPage() {
     contact_phone: "",
     contact_qq: "",
     display_url: "",
+    images: "",
+    deliverable_url: "",
   });
   const [productLoading, setProductLoading] = useState(false);
   const [productError, setProductError] = useState("");
@@ -143,12 +145,14 @@ export default function MerchantPage() {
           contact_phone: productForm.contact_phone,
           contact_qq: productForm.contact_qq,
           display_url: productForm.display_url || null,
+          images: productForm.images || null,
+          deliverable_url: productForm.deliverable_url || null,
         }),
       });
       const data = await r.json();
       if (!r.ok) { setProductError(data.detail || "发布失败"); return; }
       setProductSuccess(`商品「${data.title}」发布成功！`);
-      setProductForm({ title: "", summary: "", category_id: "", delivery_type: "project_service", price_from: "", delivery_days: "7", contact_wechat: "", contact_phone: "", contact_qq: "", display_url: "" });
+      setProductForm({ title: "", summary: "", category_id: "", delivery_type: "project_service", price_from: "", delivery_days: "7", contact_wechat: "", contact_phone: "", contact_qq: "", display_url: "", images: "", deliverable_url: "" });
     } catch { setProductError("网络错误"); }
     finally { setProductLoading(false); }
   };
@@ -271,6 +275,23 @@ export default function MerchantPage() {
               <div className="form-field">
                 <label>展示链接（选填）</label>
                 <input value={productForm.display_url} onChange={(e) => setProductForm({ ...productForm, display_url: e.target.value })} placeholder="产品官网或案例链接，如 https://example.com" />
+              </div>
+              <div className="form-field">
+                <label>产品实拍图（选填，每行一个图片URL）</label>
+                <textarea rows={3} value={productForm.images} onChange={(e) => setProductForm({ ...productForm, images: e.target.value })} placeholder={`https://example.com/photo1.jpg
+https://example.com/photo2.jpg
+https://example.com/photo3.jpg`} />
+                {productForm.images && (
+                  <div className="image-preview-row">
+                    {productForm.images.split("\n").filter(Boolean).map((url, i) => (
+                      <img key={i} src={url.trim()} alt={`商品图 ${i + 1}`} className="image-preview-thumb" onError={(e) => { e.target.style.display = "none"; }} />
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="form-field">
+                <label>交付链接（选填，买家付款后可见）</label>
+                <input value={productForm.deliverable_url} onChange={(e) => setProductForm({ ...productForm, deliverable_url: e.target.value })} placeholder="付款后买家可访问的产品链接" />
               </div>
               <div className="form-actions" style={{ marginTop: 20 }}>
                 <button type="submit" className="primary-button" disabled={productLoading}>

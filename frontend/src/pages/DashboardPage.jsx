@@ -108,6 +108,8 @@ export default function DashboardPage() {
       contact_phone: product.contact_phone || "",
       contact_qq: product.contact_qq || "",
       display_url: product.display_url || "",
+      images: product.images || "",
+      deliverable_url: product.deliverable_url || "",
     });
   };
 
@@ -304,6 +306,7 @@ export default function DashboardPage() {
                     <th>商家</th>
                     <th>金额</th>
                     <th>状态</th>
+                    <th>交付链接</th>
                     <th>时间</th>
                   </tr>
                 </thead>
@@ -315,6 +318,11 @@ export default function DashboardPage() {
                       <td>{o.merchant?.display_name || "—"}</td>
                       <td>{money(o.total_amount)}</td>
                       <td><span className="app-status">{ORDER_STATUS_LABEL[o.status] || o.status}</span></td>
+                      <td>
+                        {o.product?.deliverable_url ? (
+                          <a href={o.product.deliverable_url} target="_blank" rel="noopener noreferrer" className="deliverable-link-small">打开</a>
+                        ) : <span style={{ color: "#7a8499", fontSize: 12 }}>—</span>}
+                      </td>
                       <td style={{ fontSize: 13 }}>{new Date(o.created_at).toLocaleDateString("zh-CN")}</td>
                     </tr>
                   ))}
@@ -383,6 +391,8 @@ export default function DashboardPage() {
               <div className="form-field"><label>周期(天)</label><input type="number" value={editForm.delivery_days} onChange={(e) => setEditForm({ ...editForm, delivery_days: e.target.value })} /></div>
             </div>
             <div className="form-field"><label>展示链接</label><input value={editForm.display_url} onChange={(e) => setEditForm({ ...editForm, display_url: e.target.value })} placeholder="https://example.com" /></div>
+            <div className="form-field"><label>实拍图URL（每行一个）</label><textarea rows={2} value={editForm.images} onChange={(e) => setEditForm({ ...editForm, images: e.target.value })} placeholder="https://example.com/photo.jpg" /></div>
+            <div className="form-field"><label>交付链接</label><input value={editForm.deliverable_url} onChange={(e) => setEditForm({ ...editForm, deliverable_url: e.target.value })} placeholder="付款后买家可见的链接" /></div>
             <div className="form-actions">
               <button className="secondary-button" onClick={() => setEditProduct(null)}>取消</button>
               <button className="primary-button" onClick={handleEditSave}>保存</button>

@@ -125,16 +125,45 @@ export default function OrderPage() {
           {!paid && createdOrder && createdOrder.status === "awaiting_payment" && (
             <div className="pay-section">
               <p style={{ color: "#586276", marginBottom: 16 }}>请完成支付以锁定订单</p>
+              {createdOrder.merchant && (
+                <div className="merchant-payment-info">
+                  <h3>商家收款信息</h3>
+                  {createdOrder.merchant.alipay_account && (
+                    <p><span>支付宝</span><strong>{createdOrder.merchant.alipay_account}</strong></p>
+                  )}
+                  {createdOrder.merchant.wechatpay_merchant_id && (
+                    <p><span>微信商户号</span><strong>{createdOrder.merchant.wechatpay_merchant_id}</strong></p>
+                  )}
+                  {createdOrder.merchant.bank_account_info && (
+                    <p><span>银行账户</span><strong style={{ whiteSpace: "pre-wrap" }}>{createdOrder.merchant.bank_account_info}</strong></p>
+                  )}
+                  {!createdOrder.merchant.alipay_account && !createdOrder.merchant.wechatpay_merchant_id && !createdOrder.merchant.bank_account_info && (
+                    <p style={{ color: "#7a8499", fontSize: 13 }}>商家暂未设置收款信息</p>
+                  )}
+                </div>
+              )}
               {error && <div className="form-error">{error}</div>}
               <button className="primary-button pay-btn" onClick={handlePay} disabled={paying}>
                 {paying ? "支付中…" : `去支付 ${money(createdOrder.total_amount)}`}
               </button>
+              <p style={{ fontSize: 12, color: "#7a8499", marginTop: 8 }}>支付为模拟支付，实际转账请根据上方收款信息操作</p>
             </div>
           )}
           {paid && (
-            <p style={{ margin: "20px 0", color: "#166534" }}>
-              资金已冻结，商家将开始为您服务。
-            </p>
+            <div className="paid-section">
+              <p style={{ marginBottom: 16, color: "#166534", fontWeight: 600 }}>
+                支付成功！资金已冻结，商家将开始为您服务。
+              </p>
+              {createdOrder.product?.deliverable_url && (
+                <div className="deliverable-card">
+                  <h3>产品交付链接</h3>
+                  <p style={{ fontSize: 13, color: "#586276", marginBottom: 8 }}>您可以立即访问以下链接使用产品：</p>
+                  <a href={createdOrder.product.deliverable_url} target="_blank" rel="noopener noreferrer" className="deliverable-link">
+                    {createdOrder.product.deliverable_url}
+                  </a>
+                </div>
+              )}
+            </div>
           )}
           <div style={{ marginTop: 16, display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
             <button className="primary-button" onClick={() => navigate("/dashboard")}>查看订单</button>
