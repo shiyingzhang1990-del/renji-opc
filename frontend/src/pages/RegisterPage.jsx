@@ -29,7 +29,7 @@ export default function RegisterPage() {
       });
       const loginData = await r.json();
       if (r.ok) saveTokens(loginData.access_token, loginData.refresh_token);
-      navigate("/");
+      navigate("/dashboard");
     } catch { setError("网络错误"); }
     finally { setLoading(false); }
   };

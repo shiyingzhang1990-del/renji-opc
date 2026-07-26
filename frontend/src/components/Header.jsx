@@ -57,6 +57,7 @@ export default function Header() {
             {(user.role === "super_admin" || user.role === "platform_operator" || user.role === "risk_reviewer" || user.role === "dispute_mediator") && (
               <Link to="/admin" className="nav-admin-link">管理后台</Link>
             )}
+            <Link to="/dashboard" className="nav-dashboard-link">个人中心</Link>
             <span className="nav-user" onClick={() => navigate("/dashboard")}>
               {user.display_name}
             </span>

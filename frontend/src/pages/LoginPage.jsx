@@ -22,7 +22,7 @@ export default function LoginPage() {
       const data = await r.json();
       if (!r.ok) { setError(data.detail || "登录失败"); return; }
       saveTokens(data.access_token, data.refresh_token);
-      navigate("/");
+      navigate("/dashboard");
     } catch { setError("网络错误"); }
     finally { setLoading(false); }
   };

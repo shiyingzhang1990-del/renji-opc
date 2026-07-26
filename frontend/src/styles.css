@@ -34,6 +34,8 @@ main { min-height: 100vh; }
 .brand div { display: flex; flex-direction: column; }
 .brand small { color: #7a8499; margin-top: 2px; }
 nav { display: flex; align-items: center; gap: 20px; font-size: 14px; }
+.nav-dashboard-link { color: #2563eb; font-weight: 500; font-size: 14px; }
+.nav-dashboard-link:hover { color: #1d4ed8; }
 .nav-user { cursor: pointer; color: #172033; font-weight: 600; }
 .nav-link-btn { background: none; border: 1px solid #d9dfeb; border-radius: 8px; padding: 6px 12px; cursor: pointer; color: #586276; font-size: 13px; }
 .nav-register { background: #172033; color: #fff !important; border-radius: 9px; padding: 8px 14px; }
