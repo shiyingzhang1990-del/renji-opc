@@ -231,7 +231,11 @@ def create_order(payload: OrderCreate, db: Session = Depends(get_db)):
     if product is None or not product.published:
         raise HTTPException(400, "商品不存在或已下架")
 
-    total = sum(item.amount for item in payload.milestones)
+    if payload.milestones:
+        total = sum(item.amount for item in payload.milestones)
+    else:
+        total = product.price_from
+
     order = Order(
         order_no=f"RJ{datetime.utcnow():%Y%m%d}{uuid4().hex[:10].upper()}",
         buyer_name=payload.buyer_name,
@@ -245,18 +249,30 @@ def create_order(payload: OrderCreate, db: Session = Depends(get_db)):
         payment_method=payload.payment_method,
     )
 
-    for index, milestone_data in enumerate(payload.milestones, start=1):
-        order.milestones.append(
-            Milestone(
-                sequence=index,
-                title=milestone_data.title,
-                description=milestone_data.description,
-                amount=milestone_data.amount,
-                due_days=milestone_data.due_days,
-                status=MilestoneStatus.PENDING,
+    if payload.milestones:
+        for index, milestone_data in enumerate(payload.milestones, start=1):
+            order.milestones.append(
+                Milestone(
+                    sequence=index,
+                    title=milestone_data.title,
+                    description=milestone_data.description,
+                    amount=milestone_data.amount,
+                    due_days=milestone_data.due_days,
+                    status=MilestoneStatus.PENDING,
+                )
             )
-        )
 
+    db.add(order)
+    db.commit()
+    return load_order(db, order.id)
+
+
+@app.post("/api/orders/{order_id}/confirm-payment", response_model=OrderOut)
+def confirm_payment(order_id: int, db: Session = Depends(get_db)):
+    order = load_order(db, order_id)
+    if order.status != OrderStatus.AWAITING_PAYMENT:
+        raise HTTPException(409, "当前订单状态不能确认付款")
+    order.status = OrderStatus.COMPLETED
     db.add(order)
     db.commit()
     return load_order(db, order.id)

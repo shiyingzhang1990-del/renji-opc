@@ -97,16 +97,9 @@ class OrderCreate(BaseModel):
     buyer_name: str = Field(min_length=2, max_length=120)
     buyer_contact: str = Field(min_length=3, max_length=160)
     product_id: int
-    milestones: list[MilestoneCreate] = Field(min_length=1, max_length=20)
+    milestones: list[MilestoneCreate] = []
     contract_snapshot: str = ""
     payment_method: str = "alipay"
-
-    @model_validator(mode="after")
-    def validate_total(self):
-        total = sum(item.amount for item in self.milestones)
-        if total <= 0:
-            raise ValueError("订单总金额必须大于 0")
-        return self
 
 
 class MilestoneOut(ORMModel):
