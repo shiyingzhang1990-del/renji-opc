@@ -42,7 +42,11 @@ export default function LoginPage() {
             {loading ? "登录中…" : "登录"}
           </button>
         </form>
-        <p className="form-foot">还没有账号？<Link to="/register">立即注册</Link></p>
+        <p className="form-foot">
+          还没有账号？<Link to="/register">立即注册</Link>
+          <span className="form-foot-sep">|</span>
+          <Link to="/reset-password">忘记密码？</Link>
+        </p>
       </div>
     </div>
   );

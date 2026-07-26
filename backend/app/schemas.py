@@ -180,6 +180,16 @@ class UserOut(ORMModel):
     created_at: datetime
 
 
+class ForgotPasswordRequest(BaseModel):
+    email: str = Field(min_length=5, max_length=255)
+
+
+class ResetPasswordRequest(BaseModel):
+    reset_token: str
+    code: str = Field(min_length=6, max_length=6)
+    new_password: str = Field(min_length=8, max_length=128)
+
+
 # ---- Merchant onboarding schemas ----
 
 

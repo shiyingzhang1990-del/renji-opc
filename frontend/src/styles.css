@@ -171,6 +171,11 @@ nav { display: flex; align-items: center; gap: 20px; font-size: 14px; }
 }
 .form-foot { text-align: center; color: #6b758a; margin-top: 20px; }
 .form-foot a { color: #4256c9; font-weight: 600; }
+.form-foot-sep { color: #d9dfeb; margin: 0 8px; }
+
+.code-input {
+  font-size: 24px; letter-spacing: 12px; text-align: center; font-family: monospace;
+}
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .form-field { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
 .form-actions { display: flex; gap: 12px; margin-top: 20px; }

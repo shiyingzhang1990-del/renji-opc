@@ -10,6 +10,7 @@ import DashboardPage from "./pages/DashboardPage";
 import ContentPage from "./pages/ContentPage";
 import OrderPage from "./pages/OrderPage";
 import AdminPage from "./pages/AdminPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 
 export default function App() {
   return (
@@ -26,6 +27,7 @@ export default function App() {
         <Route path="/content/:slug" element={<ContentPage />} />
         <Route path="/order/:productId" element={<OrderPage />} />
         <Route path="/admin" element={<AdminPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
       </Routes>
       <Footer />
     </>

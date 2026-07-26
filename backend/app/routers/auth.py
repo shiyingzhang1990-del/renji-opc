@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 from hashlib import sha256
+from random import randint
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from jose import JWTError
+from jose import JWTError, jwt
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -20,6 +21,8 @@ from ..database import get_db
 from ..dependencies import get_current_user
 from ..models import AuditLog, RefreshToken, User, UserRole
 from ..schemas import (
+    ForgotPasswordRequest,
+    ResetPasswordRequest,
     TokenOut,
     TokenRefreshIn,
     UserLoginIn,
@@ -173,3 +176,82 @@ def logout(
 def get_me(current_user: User = Depends(get_current_user)):
     """Return the current authenticated user's profile."""
     return current_user
+
+
+@router.post("/forgot-password")
+def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    """Generate a 6-digit verification code and return a reset token."""
+    user = db.scalar(select(User).where(User.email == payload.email))
+    if user is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "该邮箱未注册")
+    if not user.is_active:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "该账号已被停用")
+
+    settings = get_settings()
+    code = f"{randint(0, 999999):06d}"
+    code_hash = sha256(code.encode()).hexdigest()
+    expire = datetime.utcnow() + timedelta(minutes=10)
+    reset_token = jwt.encode(
+        {"sub": str(user.id), "code_hash": code_hash, "exp": expire, "type": "reset"},
+        settings.secret_key,
+        algorithm=settings.algorithm,
+    )
+
+    return {
+        "message": "验证码已生成，10分钟内有效",
+        "reset_token": reset_token,
+        "code": code,
+    }
+
+
+@router.post("/reset-password")
+def reset_password(payload: ResetPasswordRequest, db: Session = Depends(get_db)):
+    """Verify the code and reset the user's password."""
+    settings = get_settings()
+    try:
+        claims = jwt.decode(
+            payload.reset_token, settings.secret_key, algorithms=[settings.algorithm]
+        )
+    except JWTError:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "重置令牌无效或已过期")
+
+    if claims.get("type") != "reset":
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "无效的重置令牌")
+
+    user_id = claims.get("sub")
+    expected_hash = claims.get("code_hash")
+    actual_hash = sha256(payload.code.encode()).hexdigest()
+
+    if actual_hash != expected_hash:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "验证码错误")
+
+    try:
+        uid = int(user_id)
+    except (ValueError, TypeError):
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "无效的令牌")
+
+    user = db.get(User, uid)
+    if user is None or not user.is_active:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "用户不存在或已停用")
+
+    user.hashed_password = hash_password(payload.new_password)
+
+    # Revoke all refresh tokens for security
+    for token in db.scalars(
+        select(RefreshToken).where(
+            RefreshToken.user_id == user.id,
+            RefreshToken.revoked.is_(False),
+        )
+    ):
+        token.revoked = True
+
+    db.add(AuditLog(
+        actor_id=user.id,
+        action="user.reset_password",
+        resource_type="user",
+        resource_id=user.id,
+        detail="Password reset via verification code",
+    ))
+    db.commit()
+
+    return {"message": "密码重置成功，请使用新密码登录"}
