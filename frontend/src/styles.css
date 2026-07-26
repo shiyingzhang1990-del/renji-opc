@@ -450,6 +450,12 @@ nav { display: flex; align-items: center; gap: 20px; font-size: 14px; }
 .qr-code-card span { display: block; margin-top: 8px; font-weight: 600; font-size: 14px; color: #172033; }
 .qr-code-img { width: 160px; height: 160px; object-fit: contain; border-radius: 8px; }
 
+.upload-btn {
+  display: inline-block; padding: 10px 18px; border: 2px dashed #c4cad4; border-radius: 10px;
+  cursor: pointer; color: #586276; font-size: 14px; transition: all .15s;
+}
+.upload-btn:hover { border-color: #2563eb; color: #2563eb; background: #f8faff; }
+
 /* === Footer === */
 .footer {
   background: #172033; color: #b9c2d6; padding: 50px 7vw 30px; margin-top: 60px;

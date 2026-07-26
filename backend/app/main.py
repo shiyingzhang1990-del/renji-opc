@@ -4,7 +4,7 @@ from datetime import datetime
 from decimal import Decimal
 from uuid import uuid4
 
-from fastapi import Depends, FastAPI, Header, HTTPException, Query, status
+from fastapi import Depends, FastAPI, File, Header, HTTPException, Query, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -84,6 +84,24 @@ app.include_router(merchant_onboarding.router)
 @app.get("/health")
 def health() -> dict:
     return {"status": "ok", "service": settings.app_name}
+
+
+UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "static", "uploads")
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+
+@app.post("/api/upload")
+async def upload_file(file: UploadFile = File(...)):
+    allowed = {"image/png", "image/jpeg", "image/gif", "image/webp"}
+    if file.content_type not in allowed:
+        raise HTTPException(400, "仅支持 PNG/JPG/GIF/WebP 图片")
+    ext = os.path.splitext(file.filename)[1] or ".png"
+    name = f"{uuid4().hex}{ext}"
+    path = os.path.join(UPLOAD_DIR, name)
+    content = await file.read()
+    with open(path, "wb") as f:
+        f.write(content)
+    return {"url": f"/uploads/{name}"}
 
 
 @app.get("/api/categories", response_model=list[CategoryOut])
@@ -565,8 +583,13 @@ def my_dashboard(
 
 # Serve static frontend in production
 static_dir = os.path.join(os.path.dirname(__file__), "static")
+if os.path.isdir(UPLOAD_DIR):
+    app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+
 if os.path.isdir(static_dir):
-    app.mount("/assets", StaticFiles(directory=os.path.join(static_dir, "assets")), name="assets")
+    assets_dir = os.path.join(static_dir, "assets")
+    if os.path.isdir(assets_dir):
+        app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
 
     @app.get("/{full_path:path}")
     async def serve_spa(full_path: str):

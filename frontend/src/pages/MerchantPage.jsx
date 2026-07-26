@@ -328,17 +328,51 @@ https://example.com/photo3.jpg`} />
               <textarea rows={2} value={paymentInfo.bank_account_info} onChange={(e) => setPaymentInfo({ ...paymentInfo, bank_account_info: e.target.value })} placeholder="开户行、账号、户名（选填）" />
             </div>
             <div className="form-field">
-              <label>支付宝收款码图片URL</label>
-              <input value={paymentInfo.alipay_qr_url} onChange={(e) => setPaymentInfo({ ...paymentInfo, alipay_qr_url: e.target.value })} placeholder="https://example.com/alipay-qr.png" />
-              {paymentInfo.alipay_qr_url && (
-                <img src={paymentInfo.alipay_qr_url} alt="支付宝收款码" style={{ width: 120, height: 120, objectFit: "contain", marginTop: 8, border: "1px solid #d9dfeb", borderRadius: 8 }} onError={(e) => { e.target.style.display = "none"; }} />
+              <label>支付宝收款码</label>
+              {paymentInfo.alipay_qr_url ? (
+                <div style={{ position: "relative", display: "inline-block" }}>
+                  <img src={paymentInfo.alipay_qr_url} alt="支付宝收款码" style={{ width: 140, height: 140, objectFit: "contain", border: "1px solid #d9dfeb", borderRadius: 10, display: "block" }} />
+                  <button type="button" onClick={() => setPaymentInfo({ ...paymentInfo, alipay_qr_url: "" })} style={{ position: "absolute", top: -6, right: -6, width: 22, height: 22, borderRadius: "50%", background: "#dc2626", color: "#fff", border: "none", cursor: "pointer", fontSize: 12, lineHeight: "22px", textAlign: "center", padding: 0 }}>×</button>
+                </div>
+              ) : (
+                <label className="upload-btn">
+                  <input type="file" accept="image/*" style={{ display: "none" }} onChange={async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    const formData = new FormData();
+                    formData.append("file", file);
+                    try {
+                      const r = await apiFetch("/api/upload", { method: "POST", body: formData });
+                      const data = await r.json();
+                      if (r.ok) setPaymentInfo({ ...paymentInfo, alipay_qr_url: data.url });
+                    } catch {}
+                  }} />
+                  点击上传支付宝收款码
+                </label>
               )}
             </div>
             <div className="form-field">
-              <label>微信收款码图片URL</label>
-              <input value={paymentInfo.wechat_qr_url} onChange={(e) => setPaymentInfo({ ...paymentInfo, wechat_qr_url: e.target.value })} placeholder="https://example.com/wechat-qr.png" />
-              {paymentInfo.wechat_qr_url && (
-                <img src={paymentInfo.wechat_qr_url} alt="微信收款码" style={{ width: 120, height: 120, objectFit: "contain", marginTop: 8, border: "1px solid #d9dfeb", borderRadius: 8 }} onError={(e) => { e.target.style.display = "none"; }} />
+              <label>微信收款码</label>
+              {paymentInfo.wechat_qr_url ? (
+                <div style={{ position: "relative", display: "inline-block" }}>
+                  <img src={paymentInfo.wechat_qr_url} alt="微信收款码" style={{ width: 140, height: 140, objectFit: "contain", border: "1px solid #d9dfeb", borderRadius: 10, display: "block" }} />
+                  <button type="button" onClick={() => setPaymentInfo({ ...paymentInfo, wechat_qr_url: "" })} style={{ position: "absolute", top: -6, right: -6, width: 22, height: 22, borderRadius: "50%", background: "#dc2626", color: "#fff", border: "none", cursor: "pointer", fontSize: 12, lineHeight: "22px", textAlign: "center", padding: 0 }}>×</button>
+                </div>
+              ) : (
+                <label className="upload-btn">
+                  <input type="file" accept="image/*" style={{ display: "none" }} onChange={async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    const formData = new FormData();
+                    formData.append("file", file);
+                    try {
+                      const r = await apiFetch("/api/upload", { method: "POST", body: formData });
+                      const data = await r.json();
+                      if (r.ok) setPaymentInfo({ ...paymentInfo, wechat_qr_url: data.url });
+                    } catch {}
+                  }} />
+                  点击上传微信收款码
+                </label>
               )}
             </div>
             <div className="form-actions" style={{ marginTop: 12 }}>
