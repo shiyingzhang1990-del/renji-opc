@@ -402,7 +402,7 @@ def list_orders(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    if current_user.role not in {"super_admin", "platform_operator", "merchant_owner"}:
+    if current_user.role not in {"super_admin", "platform_operator", "merchant_owner", "buyer", "merchant_staff"}:
         raise HTTPException(403, "无权查看订单列表")
     stmt = (
         select(Order)
@@ -417,6 +417,8 @@ def list_orders(
     )
     if current_user.role == "merchant_owner":
         stmt = stmt.where(Order.merchant_id == current_user.merchant_id)
+    elif current_user.role == "buyer":
+        stmt = stmt.where(Order.buyer_contact.contains(current_user.email))
     if status_filter:
         stmt = stmt.where(Order.status == status_filter)
     offset = (page - 1) * page_size
@@ -456,6 +458,53 @@ def admin_stats(
         "pending_applications": pending_apps,
         "order_status_counts": order_status_counts,
     }
+
+
+@app.get("/api/my/dashboard")
+def my_dashboard(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Personal dashboard stats for the current user."""
+    from sqlalchemy import func
+
+    data = {
+        "products_published": 0,
+        "products_total": 0,
+        "orders_sold": 0,
+        "orders_bought": 0,
+        "revenue_sold": 0.0,
+        "spent_bought": 0.0,
+    }
+
+    if current_user.merchant_id:
+        data["products_total"] = db.scalar(
+            select(func.count(Product.id)).where(Product.merchant_id == current_user.merchant_id)
+        ) or 0
+        data["products_published"] = db.scalar(
+            select(func.count(Product.id)).where(
+                Product.merchant_id == current_user.merchant_id, Product.published.is_(True)
+            )
+        ) or 0
+        data["orders_sold"] = db.scalar(
+            select(func.count(Order.id)).where(Order.merchant_id == current_user.merchant_id)
+        ) or 0
+        data["revenue_sold"] = float(
+            db.scalar(select(func.coalesce(func.sum(Order.total_amount), 0)).where(
+                Order.merchant_id == current_user.merchant_id
+            )) or 0
+        )
+
+    data["orders_bought"] = db.scalar(
+        select(func.count(Order.id)).where(Order.buyer_contact.contains(current_user.email))
+    ) or 0
+    data["spent_bought"] = float(
+        db.scalar(select(func.coalesce(func.sum(Order.total_amount), 0)).where(
+            Order.buyer_contact.contains(current_user.email)
+        )) or 0
+    )
+
+    return data
 
 
 # Serve static frontend in production
