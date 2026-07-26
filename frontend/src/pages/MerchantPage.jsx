@@ -29,10 +29,19 @@ export default function MerchantPage() {
     contact_wechat: "",
     contact_phone: "",
     contact_qq: "",
+    display_url: "",
   });
   const [productLoading, setProductLoading] = useState(false);
   const [productError, setProductError] = useState("");
   const [productSuccess, setProductSuccess] = useState("");
+
+  const [paymentInfo, setPaymentInfo] = useState({
+    alipay_account: "",
+    wechatpay_merchant_id: "",
+    bank_account_info: "",
+  });
+  const [paymentInfoSaving, setPaymentInfoSaving] = useState(false);
+  const [paymentInfoMsg, setPaymentInfoMsg] = useState("");
 
   const token = localStorage.getItem("token") || "";
 
@@ -73,7 +82,20 @@ export default function MerchantPage() {
     if (!token) return;
     apiFetch("/api/auth/me")
       .then((r) => r.ok ? r.json() : null)
-      .then(setUser);
+      .then((u) => {
+        setUser(u);
+        if (u?.merchant_id) {
+          apiFetch(`/api/merchants/${u.merchant_id}`)
+            .then((r) => r.ok ? r.json() : null)
+            .then((m) => {
+              if (m) setPaymentInfo({
+                alipay_account: m.alipay_account || "",
+                wechatpay_merchant_id: m.wechatpay_merchant_id || "",
+                bank_account_info: m.bank_account_info || "",
+              });
+            });
+        }
+      });
 
     apiFetch("/api/merchant-applications")
       .then((r) => r.ok ? r.json() : [])
@@ -83,6 +105,24 @@ export default function MerchantPage() {
       .then((r) => r.ok ? r.json() : [])
       .then(setCategories);
   }, [token]);
+
+  const handlePaymentInfoSave = async () => {
+    setPaymentInfoSaving(true); setPaymentInfoMsg("");
+    try {
+      const r = await apiFetch(`/api/merchants/${user.merchant_id}/payment-info`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(paymentInfo),
+      });
+      if (r.ok) {
+        setPaymentInfoMsg("收款信息已保存");
+      } else {
+        const d = await r.json();
+        setPaymentInfoMsg(`保存失败: ${d.detail}`);
+      }
+    } catch { setPaymentInfoMsg("网络错误"); }
+    finally { setPaymentInfoSaving(false); }
+  };
 
   const handleProductSubmit = async (e) => {
     e.preventDefault();
@@ -102,12 +142,13 @@ export default function MerchantPage() {
           contact_wechat: productForm.contact_wechat,
           contact_phone: productForm.contact_phone,
           contact_qq: productForm.contact_qq,
+          display_url: productForm.display_url || null,
         }),
       });
       const data = await r.json();
       if (!r.ok) { setProductError(data.detail || "发布失败"); return; }
       setProductSuccess(`商品「${data.title}」发布成功！`);
-      setProductForm({ title: "", summary: "", category_id: "", delivery_type: "project_service", price_from: "", delivery_days: "7", contact_wechat: "", contact_phone: "", contact_qq: "" });
+      setProductForm({ title: "", summary: "", category_id: "", delivery_type: "project_service", price_from: "", delivery_days: "7", contact_wechat: "", contact_phone: "", contact_qq: "", display_url: "" });
     } catch { setProductError("网络错误"); }
     finally { setProductLoading(false); }
   };
@@ -227,12 +268,45 @@ export default function MerchantPage() {
                   <input value={productForm.contact_qq} onChange={(e) => setProductForm({ ...productForm, contact_qq: e.target.value })} placeholder="QQ号" />
                 </div>
               </div>
+              <div className="form-field">
+                <label>展示链接（选填）</label>
+                <input value={productForm.display_url} onChange={(e) => setProductForm({ ...productForm, display_url: e.target.value })} placeholder="产品官网或案例链接，如 https://example.com" />
+              </div>
               <div className="form-actions" style={{ marginTop: 20 }}>
                 <button type="submit" className="primary-button" disabled={productLoading}>
                   {productLoading ? "发布中…" : "发布商品"}
                 </button>
               </div>
             </form>
+          </div>
+
+          <div className="form-card" style={{ margin: "24px 7vw" }}>
+            <h2 style={{ marginBottom: 4 }}>收款信息</h2>
+            <p style={{ color: "#586276", marginBottom: 20 }}>设置收款账户，用于接收订单放款</p>
+
+            {paymentInfoMsg && (
+              <div className={paymentInfoMsg.includes("失败") || paymentInfoMsg.includes("错误") ? "form-error" : "form-success"}>
+                {paymentInfoMsg}
+              </div>
+            )}
+
+            <div className="form-field" style={{ marginTop: 0 }}>
+              <label>支付宝账号</label>
+              <input value={paymentInfo.alipay_account} onChange={(e) => setPaymentInfo({ ...paymentInfo, alipay_account: e.target.value })} placeholder="手机号或邮箱" />
+            </div>
+            <div className="form-field">
+              <label>微信支付商户号</label>
+              <input value={paymentInfo.wechatpay_merchant_id} onChange={(e) => setPaymentInfo({ ...paymentInfo, wechatpay_merchant_id: e.target.value })} placeholder="微信商户号（选填）" />
+            </div>
+            <div className="form-field">
+              <label>银行账户信息（备选）</label>
+              <textarea rows={2} value={paymentInfo.bank_account_info} onChange={(e) => setPaymentInfo({ ...paymentInfo, bank_account_info: e.target.value })} placeholder="开户行、账号、户名（选填）" />
+            </div>
+            <div className="form-actions" style={{ marginTop: 12 }}>
+              <button className="primary-button" onClick={handlePaymentInfoSave} disabled={paymentInfoSaving}>
+                {paymentInfoSaving ? "保存中…" : "保存收款信息"}
+              </button>
+            </div>
           </div>
         </>
       )}

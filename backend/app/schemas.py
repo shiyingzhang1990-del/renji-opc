@@ -29,6 +29,9 @@ class MerchantOut(ORMModel):
     display_name: str
     verified: bool
     service_score: Decimal
+    alipay_account: str | None = None
+    wechatpay_merchant_id: str | None = None
+    bank_account_info: str | None = None
 
 
 class ProductOut(ORMModel):
@@ -43,6 +46,7 @@ class ProductOut(ORMModel):
     contact_wechat: str
     contact_phone: str
     contact_qq: str
+    display_url: str | None = None
     merchant: MerchantOut
     category: CategoryOut
 
@@ -59,6 +63,7 @@ class ProductCreate(BaseModel):
     contact_wechat: str = Field(default="", max_length=100)
     contact_phone: str = Field(default="", max_length=30)
     contact_qq: str = Field(default="", max_length=30)
+    display_url: str | None = Field(default=None, max_length=500)
 
 
 class ProductUpdate(BaseModel):
@@ -72,6 +77,7 @@ class ProductUpdate(BaseModel):
     contact_wechat: str | None = Field(default=None, max_length=100)
     contact_phone: str | None = Field(default=None, max_length=30)
     contact_qq: str | None = Field(default=None, max_length=30)
+    display_url: str | None = Field(default=None, max_length=500)
 
 
 class MilestoneCreate(BaseModel):
@@ -87,6 +93,7 @@ class OrderCreate(BaseModel):
     product_id: int
     milestones: list[MilestoneCreate] = Field(min_length=1, max_length=20)
     contract_snapshot: str = ""
+    payment_method: str = "alipay"
 
     @model_validator(mode="after")
     def validate_total(self):
@@ -126,6 +133,7 @@ class OrderOut(ORMModel):
     status: OrderStatus
     total_amount: Decimal
     platform_fee_rate: Decimal
+    payment_method: str = "alipay"
     created_at: datetime
     merchant: MerchantOut
     product: ProductOut
@@ -249,3 +257,9 @@ class AuditLogOut(ORMModel):
     resource_id: int | None
     detail: str
     created_at: datetime
+
+
+class MerchantPaymentInfoUpdate(BaseModel):
+    alipay_account: str | None = Field(default=None, max_length=200)
+    wechatpay_merchant_id: str | None = Field(default=None, max_length=200)
+    bank_account_info: str | None = Field(default=None, max_length=500)

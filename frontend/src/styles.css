@@ -379,6 +379,35 @@ nav { display: flex; align-items: center; gap: 20px; font-size: 14px; }
 }
 .milestone-fieldset legend { font-weight: 600; font-size: 15px; padding: 0 6px; }
 
+.payment-method-fieldset {
+  border: 1px solid #d9dfeb; border-radius: 12px; padding: 16px 18px; margin-top: 16px;
+}
+.payment-method-fieldset legend { font-weight: 600; font-size: 15px; padding: 0 6px; }
+.payment-methods { display: flex; gap: 12px; margin-top: 4px; }
+.payment-option {
+  flex: 1; display: flex; align-items: center; gap: 10px; padding: 14px 16px;
+  border: 2px solid #d9dfeb; border-radius: 12px; cursor: pointer; transition: all .2s;
+}
+.payment-option.active { border-color: #2563eb; background: #eff6ff; }
+.payment-option input { display: none; }
+.payment-icon {
+  width: 36px; height: 36px; border-radius: 8px; display: grid; place-items: center;
+  background: #eef2ff; color: #2563eb; font-weight: 700; font-size: 16px;
+}
+.payment-icon.wechat { background: #ecfdf3; color: #059669; }
+
+.order-confirm-info {
+  text-align: left; background: #f5f7fb; border-radius: 12px; padding: 16px 20px; margin: 20px 0;
+}
+.order-confirm-info p { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; }
+.order-confirm-info p span:first-child { color: #7a8499; }
+.order-confirm-info p strong { font-weight: 600; }
+.pay-section { margin: 20px 0; }
+.pay-btn { font-size: 18px; padding: 14px 40px; border-radius: 12px; }
+
+.display-url-link { color: #2563eb; word-break: break-all; }
+.display-url-link:hover { text-decoration: underline; }
+
 /* === Footer === */
 .footer {
   background: #172033; color: #b9c2d6; padding: 50px 7vw 30px; margin-top: 60px;

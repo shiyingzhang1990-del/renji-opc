@@ -107,6 +107,7 @@ export default function DashboardPage() {
       contact_wechat: product.contact_wechat || "",
       contact_phone: product.contact_phone || "",
       contact_qq: product.contact_qq || "",
+      display_url: product.display_url || "",
     });
   };
 
@@ -381,6 +382,7 @@ export default function DashboardPage() {
               <div className="form-field"><label>价格</label><input type="number" value={editForm.price_from} onChange={(e) => setEditForm({ ...editForm, price_from: e.target.value })} /></div>
               <div className="form-field"><label>周期(天)</label><input type="number" value={editForm.delivery_days} onChange={(e) => setEditForm({ ...editForm, delivery_days: e.target.value })} /></div>
             </div>
+            <div className="form-field"><label>展示链接</label><input value={editForm.display_url} onChange={(e) => setEditForm({ ...editForm, display_url: e.target.value })} placeholder="https://example.com" /></div>
             <div className="form-actions">
               <button className="secondary-button" onClick={() => setEditProduct(null)}>取消</button>
               <button className="primary-button" onClick={handleEditSave}>保存</button>

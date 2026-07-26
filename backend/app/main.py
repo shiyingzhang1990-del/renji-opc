@@ -30,6 +30,7 @@ from .payment import get_payment_provider
 from .schemas import (
     CategoryOut,
     DisputeIn,
+    MerchantPaymentInfoUpdate,
     OrderCreate,
     OrderOut,
     ProductCreate,
@@ -241,6 +242,7 @@ def create_order(payload: OrderCreate, db: Session = Depends(get_db)):
         total_amount=total,
         platform_fee_rate=Decimal(str(settings.platform_fee_rate)),
         contract_snapshot=payload.contract_snapshot,
+        payment_method=payload.payment_method,
     )
 
     for index, milestone_data in enumerate(payload.milestones, start=1):
@@ -393,6 +395,36 @@ def open_dispute(
 
 
 # ---- Admin endpoints ----
+
+@app.get("/api/merchants/{merchant_id}")
+def get_merchant(merchant_id: int, db: Session = Depends(get_db)):
+    merchant = db.get(Merchant, merchant_id)
+    if merchant is None:
+        raise HTTPException(404, "商家不存在")
+    return merchant
+
+
+@app.patch("/api/merchants/{merchant_id}/payment-info")
+def update_merchant_payment_info(
+    merchant_id: int,
+    payload: MerchantPaymentInfoUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    merchant = db.get(Merchant, merchant_id)
+    if merchant is None:
+        raise HTTPException(404, "商家不存在")
+    if current_user.merchant_id != merchant_id:
+        raise HTTPException(403, "只能修改自己商家的收款信息")
+    if current_user.role not in {"super_admin", "platform_operator", "merchant_owner"}:
+        raise HTTPException(403, "无权修改")
+
+    update_data = payload.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(merchant, key, value)
+    db.commit()
+    db.refresh(merchant)
+    return merchant
 
 @app.get("/api/orders", response_model=list[OrderOut])
 def list_orders(

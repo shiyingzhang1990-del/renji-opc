@@ -57,6 +57,14 @@ export default function ProductDetailPage() {
             <p>交付周期：约 {product.delivery_days} 个工作日</p>
             <p>货币单位：{product.currency}</p>
             {product.ai_generated_content && <p>本商品包含 AI 生成内容，请仔细验收</p>}
+            {product.display_url && (
+              <p>
+                展示链接：{" "}
+                <a href={product.display_url} target="_blank" rel="noopener noreferrer" className="display-url-link">
+                  {product.display_url}
+                </a>
+              </p>
+            )}
           </div>
         </div>
         <div className="detail-side">

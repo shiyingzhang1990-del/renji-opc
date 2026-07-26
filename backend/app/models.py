@@ -181,6 +181,9 @@ class Merchant(Base):
     community_id: Mapped[int | None] = mapped_column(ForeignKey("communities.id"), nullable=True)
     verified: Mapped[bool] = mapped_column(Boolean, default=False)
     service_score: Mapped[Decimal] = mapped_column(Numeric(3, 2), default=Decimal("5.00"))
+    alipay_account: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    wechatpay_merchant_id: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    bank_account_info: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     community: Mapped[Community | None] = relationship()
@@ -214,6 +217,7 @@ class Product(Base):
     contact_wechat: Mapped[str] = mapped_column(String(100), default="")
     contact_phone: Mapped[str] = mapped_column(String(30), default="")
     contact_qq: Mapped[str] = mapped_column(String(30), default="")
+    display_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     merchant: Mapped[Merchant] = relationship(back_populates="products")
@@ -233,6 +237,7 @@ class Order(Base):
     total_amount: Mapped[Decimal] = mapped_column(Numeric(12, 2))
     platform_fee_rate: Mapped[Decimal] = mapped_column(Numeric(6, 4))
     contract_snapshot: Mapped[str] = mapped_column(Text, default="")
+    payment_method: Mapped[str] = mapped_column(String(20), default="alipay")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
