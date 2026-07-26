@@ -32,7 +32,9 @@ class Settings(BaseSettings):
                     "Please set the DATABASE_URL environment variable on Render "
                     "by connecting a PostgreSQL database to this service."
                 )
-        if url.startswith("postgres://"):
+        if url.startswith("postgresql://"):
+            url = url.replace("postgresql://", "postgresql+psycopg://", 1)
+        elif url.startswith("postgres://"):
             url = url.replace("postgres://", "postgresql+psycopg://", 1)
         return url
 
