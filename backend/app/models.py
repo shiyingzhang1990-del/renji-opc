@@ -184,6 +184,8 @@ class Merchant(Base):
     alipay_account: Mapped[str | None] = mapped_column(String(200), nullable=True)
     wechatpay_merchant_id: Mapped[str | None] = mapped_column(String(200), nullable=True)
     bank_account_info: Mapped[str | None] = mapped_column(Text, nullable=True)
+    alipay_qr_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    wechat_qr_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     community: Mapped[Community | None] = relationship()

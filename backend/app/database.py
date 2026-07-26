@@ -49,6 +49,8 @@ def run_migrations() -> None:
                 ("alipay_account", "VARCHAR(200)"),
                 ("wechatpay_merchant_id", "VARCHAR(200)"),
                 ("bank_account_info", "TEXT"),
+                ("alipay_qr_url", "VARCHAR(500)"),
+                ("wechat_qr_url", "VARCHAR(500)"),
             ]
             for col_name, col_def in merchant_migrations:
                 if col_name not in merchant_cols:
@@ -63,6 +65,8 @@ def run_migrations() -> None:
             conn.execute(text("ALTER TABLE merchants ADD COLUMN IF NOT EXISTS alipay_account VARCHAR(200)"))
             conn.execute(text("ALTER TABLE merchants ADD COLUMN IF NOT EXISTS wechatpay_merchant_id VARCHAR(200)"))
             conn.execute(text("ALTER TABLE merchants ADD COLUMN IF NOT EXISTS bank_account_info TEXT"))
+            conn.execute(text("ALTER TABLE merchants ADD COLUMN IF NOT EXISTS alipay_qr_url VARCHAR(500)"))
+            conn.execute(text("ALTER TABLE merchants ADD COLUMN IF NOT EXISTS wechat_qr_url VARCHAR(500)"))
             conn.commit()
 
 

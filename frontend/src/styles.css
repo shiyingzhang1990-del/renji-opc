@@ -441,6 +441,15 @@ nav { display: flex; align-items: center; gap: 20px; font-size: 14px; }
 .deliverable-link-small { color: #059669; font-size: 13px; font-weight: 600; }
 .deliverable-link-small:hover { text-decoration: underline; }
 
+/* === QR Code Payment === */
+.qr-codes-row { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; margin: 16px 0; }
+.qr-code-card {
+  text-align: center; background: #fff; border: 2px solid #e2e6ee; border-radius: 14px;
+  padding: 16px; min-width: 180px;
+}
+.qr-code-card span { display: block; margin-top: 8px; font-weight: 600; font-size: 14px; color: #172033; }
+.qr-code-img { width: 160px; height: 160px; object-fit: contain; border-radius: 8px; }
+
 /* === Footer === */
 .footer {
   background: #172033; color: #b9c2d6; padding: 50px 7vw 30px; margin-top: 60px;

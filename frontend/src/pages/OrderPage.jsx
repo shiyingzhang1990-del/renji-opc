@@ -98,33 +98,52 @@ export default function OrderPage() {
               </div>
 
               <div className="merchant-payment-info">
-                <h3>请向商家转账以下金额</h3>
+                <h3>请扫码支付</h3>
                 <p className="pay-amount">{money(createdOrder.total_amount)}</p>
-                {merchant?.alipay_account && (
-                  <div className="pay-account-row">
-                    <span className="pay-account-label">支付宝账号</span>
-                    <strong>{merchant.alipay_account}</strong>
-                  </div>
-                )}
-                {merchant?.wechatpay_merchant_id && (
-                  <div className="pay-account-row">
-                    <span className="pay-account-label">微信商户号</span>
-                    <strong>{merchant.wechatpay_merchant_id}</strong>
-                  </div>
-                )}
-                {merchant?.bank_account_info && (
-                  <div className="pay-account-row">
-                    <span className="pay-account-label">银行账户</span>
-                    <strong style={{ whiteSpace: "pre-wrap" }}>{merchant.bank_account_info}</strong>
-                  </div>
-                )}
-                {!merchant?.alipay_account && !merchant?.wechatpay_merchant_id && !merchant?.bank_account_info && (
+
+                <div className="qr-codes-row">
+                  {merchant?.alipay_qr_url && (
+                    <div className="qr-code-card">
+                      <img src={merchant.alipay_qr_url} alt="支付宝收款码" className="qr-code-img" onError={(e) => { e.target.src = "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160"><rect fill="#f0f5ff" width="160" height="160" rx="12"/><text x="80" y="70" text-anchor="middle" fill="#1677ff" font-size="16" font-weight="600">支付宝</text><text x="80" y="100" text-anchor="middle" fill="#586276" font-size="12">收款码图片加载失败</text></svg>'); }} />
+                      <span>支付宝扫码</span>
+                    </div>
+                  )}
+                  {merchant?.wechat_qr_url && (
+                    <div className="qr-code-card">
+                      <img src={merchant.wechat_qr_url} alt="微信收款码" className="qr-code-img" onError={(e) => { e.target.src = "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160"><rect fill="#f0fff4" width="160" height="160" rx="12"/><text x="80" y="70" text-anchor="middle" fill="#07c160" font-size="16" font-weight="600">微信支付</text><text x="80" y="100" text-anchor="middle" fill="#586276" font-size="12">收款码图片加载失败</text></svg>'); }} />
+                      <span>微信扫码</span>
+                    </div>
+                  )}
+                  {!merchant?.alipay_qr_url && !merchant?.wechat_qr_url && (
+                    <div style={{ width: "100%", textAlign: "center", padding: 20 }}>
+                      {merchant?.alipay_account && (
+                        <div className="pay-account-row">
+                          <span className="pay-account-label">支付宝账号</span>
+                          <strong>{merchant.alipay_account}</strong>
+                        </div>
+                      )}
+                      {merchant?.wechatpay_merchant_id && (
+                        <div className="pay-account-row">
+                          <span className="pay-account-label">微信商户号</span>
+                          <strong>{merchant.wechatpay_merchant_id}</strong>
+                        </div>
+                      )}
+                      {merchant?.bank_account_info && (
+                        <div className="pay-account-row">
+                          <span className="pay-account-label">银行账户</span>
+                          <strong style={{ whiteSpace: "pre-wrap" }}>{merchant.bank_account_info}</strong>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+                {!merchant?.alipay_qr_url && !merchant?.wechat_qr_url && !merchant?.alipay_account && !merchant?.wechatpay_merchant_id && !merchant?.bank_account_info && (
                   <p style={{ color: "#7a8499", fontSize: 13 }}>商家暂未设置收款信息，请联系商家</p>
                 )}
               </div>
 
               <p style={{ fontSize: 13, color: "#586276", marginBottom: 16 }}>
-                请使用支付宝或微信 App 向上述账号转账 <strong>{money(createdOrder.total_amount)}</strong>，<br />转账完成后点击下方按钮获取产品。
+                请用支付宝或微信扫描上方二维码，转账 <strong>{money(createdOrder.total_amount)}</strong>，<br />付款完成后点击下方按钮获取产品。
               </p>
 
               {error && <div className="form-error">{error}</div>}
@@ -136,12 +155,12 @@ export default function OrderPage() {
           ) : (
             <>
               <h1>付款已确认</h1>
-              <p style={{ color: "#166534", margin: "12px 0" }}>订单已完成，您可以直接使用产品了。</p>
+              <p style={{ color: "#166534", margin: "12px 0" }}>订单已完成，产品已送达。</p>
 
               {createdOrder.product?.deliverable_url && (
                 <div className="deliverable-card">
-                  <h3>产品交付链接</h3>
-                  <p style={{ fontSize: 13, color: "#586276", marginBottom: 8 }}>点击下方链接使用产品：</p>
+                  <h3>收货消息</h3>
+                  <p style={{ fontSize: 14, color: "#586276", marginBottom: 8 }}>您的产品链接如下，点击立即使用：</p>
                   <a href={createdOrder.product.deliverable_url} target="_blank" rel="noopener noreferrer" className="deliverable-link">
                     打开产品 →
                   </a>

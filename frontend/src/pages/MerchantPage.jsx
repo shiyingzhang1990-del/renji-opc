@@ -41,6 +41,8 @@ export default function MerchantPage() {
     alipay_account: "",
     wechatpay_merchant_id: "",
     bank_account_info: "",
+    alipay_qr_url: "",
+    wechat_qr_url: "",
   });
   const [paymentInfoSaving, setPaymentInfoSaving] = useState(false);
   const [paymentInfoMsg, setPaymentInfoMsg] = useState("");
@@ -94,6 +96,8 @@ export default function MerchantPage() {
                 alipay_account: m.alipay_account || "",
                 wechatpay_merchant_id: m.wechatpay_merchant_id || "",
                 bank_account_info: m.bank_account_info || "",
+                alipay_qr_url: m.alipay_qr_url || "",
+                wechat_qr_url: m.wechat_qr_url || "",
               });
             });
         }
@@ -322,6 +326,20 @@ https://example.com/photo3.jpg`} />
             <div className="form-field">
               <label>银行账户信息（备选）</label>
               <textarea rows={2} value={paymentInfo.bank_account_info} onChange={(e) => setPaymentInfo({ ...paymentInfo, bank_account_info: e.target.value })} placeholder="开户行、账号、户名（选填）" />
+            </div>
+            <div className="form-field">
+              <label>支付宝收款码图片URL</label>
+              <input value={paymentInfo.alipay_qr_url} onChange={(e) => setPaymentInfo({ ...paymentInfo, alipay_qr_url: e.target.value })} placeholder="https://example.com/alipay-qr.png" />
+              {paymentInfo.alipay_qr_url && (
+                <img src={paymentInfo.alipay_qr_url} alt="支付宝收款码" style={{ width: 120, height: 120, objectFit: "contain", marginTop: 8, border: "1px solid #d9dfeb", borderRadius: 8 }} onError={(e) => { e.target.style.display = "none"; }} />
+              )}
+            </div>
+            <div className="form-field">
+              <label>微信收款码图片URL</label>
+              <input value={paymentInfo.wechat_qr_url} onChange={(e) => setPaymentInfo({ ...paymentInfo, wechat_qr_url: e.target.value })} placeholder="https://example.com/wechat-qr.png" />
+              {paymentInfo.wechat_qr_url && (
+                <img src={paymentInfo.wechat_qr_url} alt="微信收款码" style={{ width: 120, height: 120, objectFit: "contain", marginTop: 8, border: "1px solid #d9dfeb", borderRadius: 8 }} onError={(e) => { e.target.style.display = "none"; }} />
+              )}
             </div>
             <div className="form-actions" style={{ marginTop: 12 }}>
               <button className="primary-button" onClick={handlePaymentInfoSave} disabled={paymentInfoSaving}>

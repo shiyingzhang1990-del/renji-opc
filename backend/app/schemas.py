@@ -32,6 +32,8 @@ class MerchantOut(ORMModel):
     alipay_account: str | None = None
     wechatpay_merchant_id: str | None = None
     bank_account_info: str | None = None
+    alipay_qr_url: str | None = None
+    wechat_qr_url: str | None = None
 
 
 class ProductOut(ORMModel):
@@ -262,3 +264,5 @@ class MerchantPaymentInfoUpdate(BaseModel):
     alipay_account: str | None = Field(default=None, max_length=200)
     wechatpay_merchant_id: str | None = Field(default=None, max_length=200)
     bank_account_info: str | None = Field(default=None, max_length=500)
+    alipay_qr_url: str | None = Field(default=None, max_length=500)
+    wechat_qr_url: str | None = Field(default=None, max_length=500)
