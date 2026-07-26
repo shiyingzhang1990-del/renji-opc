@@ -39,7 +39,7 @@ target_metadata = Base.metadata
 # Override sqlalchemy.url from app settings if DATABASE_URL env var is set
 from app.config import get_settings  # noqa: E402
 settings = get_settings()
-config.set_main_option("sqlalchemy.url", settings.database_url)
+config.set_main_option("sqlalchemy.url", settings.effective_database_url)
 
 
 def run_migrations_offline() -> None:

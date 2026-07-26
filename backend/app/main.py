@@ -46,10 +46,18 @@ settings = get_settings()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    import logging
+    logger = logging.getLogger("renji")
+    logger.setLevel(logging.INFO)
+    h = logging.StreamHandler()
+    h.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))
+    logger.addHandler(h)
+    logger.info(f"Starting on DB: {settings.effective_database_url[:60]}...")
     Base.metadata.create_all(bind=engine)
     run_migrations()
     with Session(engine) as db:
         seed_data(db)
+    logger.info("Startup complete")
     yield
 
 
