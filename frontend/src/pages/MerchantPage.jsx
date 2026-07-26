@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
+import { apiFetch } from "../api";
 
 const DELIVERY_LABELS = {
   digital_good: "数字商品",
@@ -54,9 +53,9 @@ export default function MerchantPage() {
       contact_email: user?.email || "",
     };
     try {
-      const r = await fetch(`${API_BASE}/api/merchant-applications`, {
+      const r = await apiFetch("/api/merchant-applications", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
       const data = await r.json();
@@ -64,9 +63,7 @@ export default function MerchantPage() {
       setForm({ display_name: "", industry_category: "", business_scope: "" });
       setShowForm(false);
       setSuccess("入驻申请已提交！等待平台审核。");
-      const r2 = await fetch(`${API_BASE}/api/merchant-applications`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const r2 = await apiFetch("/api/merchant-applications");
       if (r2.ok) setApps(await r2.json());
     } catch { setError("网络错误"); }
     finally { setLoading(false); }
@@ -74,17 +71,15 @@ export default function MerchantPage() {
 
   useEffect(() => {
     if (!token) return;
-    fetch(`${API_BASE}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
+    apiFetch("/api/auth/me")
       .then((r) => r.ok ? r.json() : null)
       .then(setUser);
 
-    fetch(`${API_BASE}/api/merchant-applications`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
+    apiFetch("/api/merchant-applications")
       .then((r) => r.ok ? r.json() : [])
       .then(setApps);
 
-    fetch(`${API_BASE}/api/categories`)
+    apiFetch("/api/categories")
       .then((r) => r.ok ? r.json() : [])
       .then(setCategories);
   }, [token]);
@@ -93,9 +88,9 @@ export default function MerchantPage() {
     e.preventDefault();
     setProductError(""); setProductSuccess(""); setProductLoading(true);
     try {
-      const r = await fetch(`${API_BASE}/api/products`, {
+      const r = await apiFetch("/api/products", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           merchant_id: user.merchant_id,
           category_id: Number(productForm.category_id),
@@ -167,9 +162,8 @@ export default function MerchantPage() {
               {app.review_comment && <p className="app-comment">审核意见：{app.review_comment}</p>}
               {app.status === "draft" && (
                 <button className="small-btn" onClick={async () => {
-                  await fetch(`${API_BASE}/api/merchant-applications/${app.id}/submit`, {
+                  await apiFetch(`/api/merchant-applications/${app.id}/submit`, {
                     method: "POST",
-                    headers: { Authorization: `Bearer ${token}` }
                   });
                   window.location.reload();
                 }}>提交审核</button>

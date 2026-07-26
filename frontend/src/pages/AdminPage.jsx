@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
+import { apiFetch, clearTokens } from "../api";
 
 const STATUS_LABEL = {
   draft: "草稿", submitted: "待审核", reviewing: "审核中",
@@ -42,11 +41,11 @@ export default function AdminPage() {
     setLoading(true);
     try {
       const [meR, appsR, usersR, ordersR, statsR] = await Promise.all([
-        fetch(`${API_BASE}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } }),
-        fetch(`${API_BASE}/api/merchant-applications`, { headers: { Authorization: `Bearer ${token}` } }),
-        fetch(`${API_BASE}/api/users`, { headers: { Authorization: `Bearer ${token}` } }),
-        fetch(`${API_BASE}/api/orders`, { headers: { Authorization: `Bearer ${token}` } }),
-        fetch(`${API_BASE}/api/admin/stats`, { headers: { Authorization: `Bearer ${token}` } }),
+        apiFetch("/api/auth/me"),
+        apiFetch("/api/merchant-applications"),
+        apiFetch("/api/users"),
+        apiFetch("/api/orders"),
+        apiFetch("/api/admin/stats"),
       ]);
       const meData = meR.ok ? await meR.json() : null;
       if (meData && !["super_admin", "platform_operator"].includes(meData.role)) {
@@ -66,9 +65,9 @@ export default function AdminPage() {
   const handleReview = async (appId, status, comment) => {
     setActionLoading(true); setMessage("");
     try {
-      const r = await fetch(`${API_BASE}/api/merchant-applications/${appId}/review`, {
+      const r = await apiFetch(`/api/merchant-applications/${appId}/review`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status, review_comment: comment || "", risk_level: "normal" }),
       });
       if (r.ok) {
@@ -85,9 +84,8 @@ export default function AdminPage() {
   const handleSuspend = async (appId, reason) => {
     setActionLoading(true); setMessage("");
     try {
-      const r = await fetch(`${API_BASE}/api/merchant-applications/${appId}/suspend?reason=${encodeURIComponent(reason)}`, {
+      const r = await apiFetch(`/api/merchant-applications/${appId}/suspend?reason=${encodeURIComponent(reason)}`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
       });
       if (r.ok) { setMessage("商家已暂停"); fetchData(); }
       else { const d = await r.json(); setMessage(`操作失败: ${d.detail}`); }
@@ -98,9 +96,8 @@ export default function AdminPage() {
   const handleRoleChange = async (userId, newRole) => {
     setActionLoading(true); setMessage("");
     try {
-      const r = await fetch(`${API_BASE}/api/users/${userId}/role?new_role=${encodeURIComponent(newRole)}`, {
+      const r = await apiFetch(`/api/users/${userId}/role?new_role=${encodeURIComponent(newRole)}`, {
         method: "PATCH",
-        headers: { Authorization: `Bearer ${token}` },
       });
       if (r.ok) { setMessage("角色已更新"); fetchData(); }
       else { const d = await r.json(); setMessage(`操作失败: ${d.detail}`); }

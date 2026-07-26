@@ -69,10 +69,13 @@ def login(payload: UserLoginIn, db: Session = Depends(get_db)):
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Account is disabled")
 
     # Revoke all previous refresh tokens for this user
-    db.query(RefreshToken).filter(
-        RefreshToken.user_id == user.id,
-        RefreshToken.revoked.is_(False),
-    ).update({"revoked": True})
+    for token in db.scalars(
+        select(RefreshToken).where(
+            RefreshToken.user_id == user.id,
+            RefreshToken.revoked.is_(False),
+        )
+    ):
+        token.revoked = True
 
     settings = get_settings()
     access_token = create_access_token(str(user.id))

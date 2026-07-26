@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
+import { apiFetch } from "../api";
 
 function money(v) {
   return new Intl.NumberFormat("zh-CN", { style: "currency", currency: "CNY" }).format(Number(v));
@@ -30,7 +29,7 @@ export default function OrderPage() {
 
   useEffect(() => {
     if (!token) { navigate("/login"); return; }
-    fetch(`${API_BASE}/api/products`)
+    apiFetch("/api/products")
       .then((r) => r.json())
       .then((all) => {
         const p = all.find((x) => x.id === Number(productId));
@@ -53,9 +52,9 @@ export default function OrderPage() {
     setError("");
     setSubmitting(true);
     try {
-      const r = await fetch(`${API_BASE}/api/orders`, {
+      const r = await apiFetch("/api/orders", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           buyer_name: form.buyer_name,
           buyer_contact: form.buyer_contact,

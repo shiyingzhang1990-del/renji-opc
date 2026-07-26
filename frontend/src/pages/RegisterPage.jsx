@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
+import { saveTokens, apiFetch } from "../api";
 
 export default function RegisterPage() {
   const [form, setForm] = useState({ email: "", password: "", display_name: "" });
@@ -16,20 +15,20 @@ export default function RegisterPage() {
     setError("");
     setLoading(true);
     try {
-      const r = await fetch(`${API_BASE}/api/auth/register`, {
+      let r = await apiFetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
       const data = await r.json();
       if (!r.ok) { setError(data.detail || "注册失败"); return; }
-      const r2 = await fetch(`${API_BASE}/api/auth/login`, {
+      r = await apiFetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: form.email, password: form.password }),
       });
-      const loginData = await r2.json();
-      if (r2.ok) localStorage.setItem("token", loginData.access_token);
+      const loginData = await r.json();
+      if (r.ok) saveTokens(loginData.access_token, loginData.refresh_token);
       navigate("/");
     } catch { setError("网络错误"); }
     finally { setLoading(false); }

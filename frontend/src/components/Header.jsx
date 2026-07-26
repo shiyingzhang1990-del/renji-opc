@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
+import { apiFetch, clearTokens } from "../api";
 
 export default function Header() {
   const [user, setUser] = useState(null);
@@ -10,20 +9,18 @@ export default function Header() {
 
   useEffect(() => {
     if (token) {
-      fetch(`${API_BASE}/api/auth/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      apiFetch("/api/auth/me")
         .then((r) => (r.ok ? r.json() : null))
         .then((data) => {
           if (data) setUser(data);
-          else { setToken(""); localStorage.removeItem("token"); setUser(null); }
+          else { setToken(""); clearTokens(); setUser(null); }
         })
         .catch(() => {});
     }
   }, [token]);
 
   const handleLogout = () => {
-    setToken(""); localStorage.removeItem("token"); setUser(null);
+    setToken(""); clearTokens(); setUser(null);
     navigate("/");
   };
 

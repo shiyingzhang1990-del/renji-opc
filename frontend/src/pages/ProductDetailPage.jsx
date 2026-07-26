@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
+import { apiFetch } from "../api";
 const deliveryLabels = {
   digital_good: "数字商品", subscription: "订阅软件",
   project_service: "项目服务", consulting: "专业咨询",
@@ -20,7 +19,7 @@ export default function ProductDetailPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch(`${API_BASE}/api/products`)
+    apiFetch("/api/products")
       .then((r) => r.json())
       .then((all) => {
         const found = all.find((p) => p.id === Number(id));

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
+import { saveTokens, apiFetch } from "../api";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -15,14 +14,14 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
     try {
-      const r = await fetch(`${API_BASE}/api/auth/login`, {
+      const r = await apiFetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
       const data = await r.json();
       if (!r.ok) { setError(data.detail || "登录失败"); return; }
-      localStorage.setItem("token", data.access_token);
+      saveTokens(data.access_token, data.refresh_token);
       navigate("/");
     } catch { setError("网络错误"); }
     finally { setLoading(false); }

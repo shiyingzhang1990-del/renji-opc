@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
+import { apiFetch } from "../api";
 
 const deliveryLabels = {
   digital_good: "数字商品",
@@ -29,8 +28,8 @@ export default function HomePage() {
 
   useEffect(() => {
     Promise.all([
-      fetch(`${API_BASE}/api/categories`).then((r) => r.json()),
-      fetch(`${API_BASE}/api/products`).then((r) => r.json()),
+      apiFetch("/api/categories").then((r) => r.json()),
+      apiFetch("/api/products").then((r) => r.json()),
     ])
       .then(([cats, prods]) => { setCategories(cats); setProducts(prods); })
       .finally(() => setLoading(false));

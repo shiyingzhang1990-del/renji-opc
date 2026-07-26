@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
+import { apiFetch, clearTokens } from "../api";
 
 export default function DashboardPage() {
   const [user, setUser] = useState(null);
@@ -11,15 +10,13 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!token) { navigate("/login"); return; }
-    fetch(`${API_BASE}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
+    apiFetch("/api/auth/me")
       .then((r) => r.ok ? r.json() : null)
       .then((data) => {
-        if (!data) { localStorage.removeItem("token"); navigate("/login"); return; }
+        if (!data) { clearTokens(); navigate("/login"); return; }
         setUser(data);
       });
-    fetch(`${API_BASE}/api/merchant-applications`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
+    apiFetch("/api/merchant-applications")
       .then((r) => r.ok ? r.json() : [])
       .then(setMerchantApps);
   }, []);
