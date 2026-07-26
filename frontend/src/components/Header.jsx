@@ -44,7 +44,7 @@ export default function Header() {
         )}
         {user ? (
           <>
-            {(user.role === "super_admin" || user.role === "platform_operator") && (
+            {(user.role === "super_admin" || user.role === "platform_operator" || user.role === "risk_reviewer" || user.role === "dispute_mediator") && (
               <Link to="/admin" className="nav-admin-link">管理后台</Link>
             )}
             <span className="nav-user" onClick={() => navigate("/dashboard")}>

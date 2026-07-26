@@ -29,36 +29,40 @@ export default function AdminPage() {
   const [orders, setOrders] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [authError, setAuthError] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [reviewComment, setReviewComment] = useState("");
   const [suspendReason, setSuspendReason] = useState("");
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
-  const token = localStorage.getItem("token") || "";
 
   const fetchData = useCallback(async () => {
-    if (!token) return;
-    setLoading(true);
+    const token = localStorage.getItem("token");
+    if (!token) { setAuthError(true); setLoading(false); return; }
+    setLoading(true); setAuthError(false);
     try {
-      const [meR, appsR, usersR, ordersR, statsR] = await Promise.all([
-        apiFetch("/api/auth/me"),
+      const meR = await apiFetch("/api/auth/me");
+      if (!meR.ok) { clearTokens(); setAuthError(true); setLoading(false); return; }
+      const meData = await meR.json();
+      if (!["super_admin", "platform_operator", "risk_reviewer", "dispute_mediator"].includes(meData.role)) {
+        navigate("/dashboard");
+        return;
+      }
+      setUser(meData);
+
+      const [appsR, usersR, ordersR, statsR] = await Promise.all([
         apiFetch("/api/merchant-applications"),
         apiFetch("/api/users"),
         apiFetch("/api/orders"),
         apiFetch("/api/admin/stats"),
       ]);
-      const meData = meR.ok ? await meR.json() : null;
-      if (meData && !["super_admin", "platform_operator"].includes(meData.role)) {
-        navigate("/dashboard");
-        return;
-      }
-      setUser(meData);
       setApplications(appsR.ok ? await appsR.json() : []);
       setUsers(usersR.ok ? await usersR.json() : []);
       setOrders(ordersR.ok ? await ordersR.json() : []);
-      setStats(statsR.ok ? await statsR.json() : null);
-    } catch {} finally { setLoading(false); }
-  }, [token, navigate]);
+      if (statsR.ok) setStats(await statsR.json());
+    } catch { setAuthError(true); }
+    finally { setLoading(false); }
+  }, [navigate]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -105,20 +109,18 @@ export default function AdminPage() {
     finally { setActionLoading(false); }
   };
 
-  if (!token) {
+  if (loading) return <div className="empty" style={{ padding: 80 }}>加载中…</div>;
+  if (authError || !user) {
     return (
       <div className="form-page">
         <div className="form-card" style={{ textAlign: "center" }}>
           <h1>管理后台</h1>
-          <p style={{ margin: "20px 0" }}>请先登录管理员账号</p>
+          <p style={{ margin: "20px 0", color: "#586276" }}>请先登录管理员账号</p>
           <button className="primary-button" onClick={() => navigate("/login")}>去登录</button>
         </div>
       </div>
     );
   }
-
-  if (loading) return <div className="empty" style={{ padding: 80 }}>加载中…</div>;
-  if (!user) return null;
 
   const pendingApps = applications.filter((a) => ["submitted", "reviewing"].includes(a.status));
   const allMerchants = applications.filter((a) => ["verified", "suspended"].includes(a.status));
