@@ -34,6 +34,7 @@ from .schemas import (
     OrderOut,
     ProductCreate,
     ProductOut,
+    ProductUpdate,
     SubmitMilestoneIn,
 )
 from .seed import seed_data
@@ -130,6 +131,71 @@ def create_product(
         .options(selectinload(Product.merchant), selectinload(Product.category))
     )
     return db.scalar(stmt)
+
+
+@app.get("/api/my/products", response_model=list[ProductOut])
+def list_my_products(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Return all products belonging to the current user's merchant."""
+    if current_user.merchant_id is None:
+        raise HTTPException(403, "只有商家可以查看自己的商品")
+    stmt = (
+        select(Product)
+        .where(Product.merchant_id == current_user.merchant_id)
+        .options(selectinload(Product.merchant), selectinload(Product.category))
+        .order_by(Product.id.desc())
+    )
+    return list(db.scalars(stmt).unique())
+
+
+@app.patch("/api/products/{product_id}", response_model=ProductOut)
+def update_product(
+    product_id: int,
+    payload: ProductUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Update a product. Only the owning merchant can update."""
+    product = db.get(Product, product_id)
+    if product is None:
+        raise HTTPException(404, "商品不存在")
+    if current_user.merchant_id != product.merchant_id:
+        raise HTTPException(403, "只能编辑自己的商品")
+    if current_user.role not in {"super_admin", "platform_operator", "merchant_owner"}:
+        raise HTTPException(403, "无权编辑商品")
+
+    update_data = payload.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(product, key, value)
+    db.commit()
+
+    stmt = (
+        select(Product)
+        .where(Product.id == product.id)
+        .options(selectinload(Product.merchant), selectinload(Product.category))
+    )
+    return db.scalar(stmt)
+
+
+@app.delete("/api/products/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_product(
+    product_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Delete a product. Only the owning merchant can delete."""
+    product = db.get(Product, product_id)
+    if product is None:
+        raise HTTPException(404, "商品不存在")
+    if current_user.merchant_id != product.merchant_id:
+        raise HTTPException(403, "只能删除自己的商品")
+    if current_user.role not in {"super_admin", "platform_operator", "merchant_owner"}:
+        raise HTTPException(403, "无权删除商品")
+
+    db.delete(product)
+    db.commit()
 
 
 def load_order(db: Session, order_id: int) -> Order:

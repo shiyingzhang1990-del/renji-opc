@@ -61,6 +61,19 @@ class ProductCreate(BaseModel):
     contact_qq: str = Field(default="", max_length=30)
 
 
+class ProductUpdate(BaseModel):
+    title: str | None = Field(default=None, min_length=2, max_length=180)
+    summary: str | None = Field(default=None, min_length=10)
+    category_id: int | None = None
+    delivery_type: ProductDeliveryType | None = None
+    price_from: Decimal | None = Field(default=None, gt=0)
+    delivery_days: int | None = Field(default=None, ge=1, le=365)
+    published: bool | None = None
+    contact_wechat: str | None = Field(default=None, max_length=100)
+    contact_phone: str | None = Field(default=None, max_length=30)
+    contact_qq: str | None = Field(default=None, max_length=30)
+
+
 class MilestoneCreate(BaseModel):
     title: str = Field(min_length=2, max_length=160)
     description: str = ""
