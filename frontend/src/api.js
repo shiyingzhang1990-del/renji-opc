@@ -42,9 +42,11 @@ export async function apiFetch(url, options = {}) {
 export function saveTokens(access_token, refresh_token) {
   localStorage.setItem("token", access_token);
   localStorage.setItem("refresh_token", refresh_token);
+  window.dispatchEvent(new Event("auth-change"));
 }
 
 export function clearTokens() {
   localStorage.removeItem("token");
   localStorage.removeItem("refresh_token");
+  window.dispatchEvent(new Event("auth-change"));
 }

@@ -2,10 +2,20 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { apiFetch, clearTokens } from "../api";
 
+function readToken() {
+  return localStorage.getItem("token") || "";
+}
+
 export default function Header() {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem("token") || "");
+  const [token, setToken] = useState(readToken);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const handler = () => setToken(readToken());
+    window.addEventListener("auth-change", handler);
+    return () => window.removeEventListener("auth-change", handler);
+  }, []);
 
   useEffect(() => {
     if (token) {
@@ -13,14 +23,14 @@ export default function Header() {
         .then((r) => (r.ok ? r.json() : null))
         .then((data) => {
           if (data) setUser(data);
-          else { setToken(""); clearTokens(); setUser(null); }
+          else { clearTokens(); setUser(null); }
         })
         .catch(() => {});
     }
   }, [token]);
 
   const handleLogout = () => {
-    setToken(""); clearTokens(); setUser(null);
+    clearTokens(); setUser(null);
     navigate("/");
   };
 
