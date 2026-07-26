@@ -431,6 +431,7 @@ def list_orders(
     status_filter: str | None = Query(default=None, alias="status"),
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=20, ge=1, le=100),
+    role_filter: str | None = Query(default=None, alias="filter"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -447,10 +448,17 @@ def list_orders(
         )
         .order_by(Order.id.desc())
     )
-    if current_user.role == "merchant_owner":
+    if role_filter == "sold":
+        if current_user.merchant_id is None:
+            return []
         stmt = stmt.where(Order.merchant_id == current_user.merchant_id)
-    elif current_user.role == "buyer":
+    elif role_filter == "bought":
         stmt = stmt.where(Order.buyer_contact.contains(current_user.email))
+    else:
+        if current_user.role == "merchant_owner":
+            stmt = stmt.where(Order.merchant_id == current_user.merchant_id)
+        elif current_user.role == "buyer":
+            stmt = stmt.where(Order.buyer_contact.contains(current_user.email))
     if status_filter:
         stmt = stmt.where(Order.status == status_filter)
     offset = (page - 1) * page_size

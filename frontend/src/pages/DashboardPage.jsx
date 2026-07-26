@@ -60,13 +60,13 @@ export default function DashboardPage() {
       if (meData.merchant_id) {
         const [prodsR, soldR] = await Promise.all([
           apiFetch("/api/my/products"),
-          apiFetch("/api/orders?page_size=50"),
+          apiFetch("/api/orders?page_size=50&filter=sold"),
         ]);
         setProducts(prodsR.ok ? await prodsR.json() : []);
         setSoldOrders(soldR.ok ? await soldR.json() : []);
       }
 
-      const boughtR = await apiFetch("/api/orders?page_size=50");
+      const boughtR = await apiFetch("/api/orders?page_size=50&filter=bought");
       setBoughtOrders(boughtR.ok ? await boughtR.json() : []);
     } catch {} finally { setLoading(false); }
   }, [navigate]);
